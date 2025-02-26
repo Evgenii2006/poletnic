@@ -1,0 +1,23 @@
+[33mcommit 881cc1fed138b1c01c85aa0e0c66ccf4a38ee325[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev_version[m[33m, [m[1;31morigin/dev_version[m[33m)[m
+Author: Eugene <dsegyb154@gmail.com>
+Date:   Wed Feb 26 10:48:13 2025 +0300
+
+    +- working version
+
+[33mcommit 013d60367ca5d395ecd5fba6d61eb17a28b045b1[m
+Author: Eugene <dsegyb154@gmail.com>
+Date:   Wed Feb 26 10:37:33 2025 +0300
+
+    delete asm
+
+[33mcommit d3ee55dae17eed2c0fbad8f15ec3ae0d891bd354[m
+Author: Eugene <dsegyb154@gmail.com>
+Date:   Wed Feb 26 10:21:31 2025 +0300
+
+    dev_commit
+
+[33mcommit c53ae63d2ed871f6ef7fcb96a96871c7f929640f[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: Eugene <dsegyb154@gmail.com>
+Date:   Wed Feb 26 08:58:03 2025 +0300
+
+    first commit

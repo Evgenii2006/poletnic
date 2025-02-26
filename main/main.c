@@ -18,7 +18,9 @@
 
 // Параметры IMU (ICM-42688-P)
 #define I2C_PORT I2C_NUM_0
-#define IMU_ADDR 0x68
+#define MPU6050_ADDR 0x68
+#define HMC5883L_ADDR 0x1E
+#define BMP160_ADDR 0x77
 
 // Глобальные переменные
 volatile float roll = 0.0, pitch = 0.0;
@@ -77,7 +79,7 @@ void i2c_master_init(i2c_port_t i2c_num, gpio_num_t sda, gpio_num_t scl, uint32_
 // Чтение данных с IMU (упрощено)
 void read_imu() {
     uint8_t data[6];
-    i2c_master_read_from_device(I2C_PORT, IMU_ADDR, data, 6, 100);
+    i2c_master_read_from_device(I2C_PORT, MPU6050_ADDR, data, 6, 100);
     int16_t accel_x = (data[0] << 8) | data[1];
     int16_t accel_y = (data[2] << 8) | data[3];
     int16_t accel_z = (data[4] << 8) | data[5];
