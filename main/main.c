@@ -86,16 +86,7 @@ void read_imu() {
     roll = atan2(accel_y, accel_z) * 180 / M_PI;
 }
 
-// Ассемблер для быстрого вычисления PID (пример)
 float pid_control(float setpoint, float measured) {
-    static float error_prev = 0, integral = 0;
-    float kp = 1.0, ki = 0.1, kd = 0.05;
-    float error = setpoint - measured;
-    integral += error;
-    float derivative = error - error_prev;
-    float output;
-
-    float pid_control(float setpoint, float measured) {
     static float error_prev = 0, integral = 0;
     float kp = 1.0, ki = 0.1, kd = 0.05;
     float error = setpoint - measured;
@@ -107,8 +98,8 @@ float pid_control(float setpoint, float measured) {
 
     error_prev = error;
     return output;
-	}
 }
+
 // Управление полетом (Ядро 0)
 void flight_task(void *pvParameters) {
     while (1) {
