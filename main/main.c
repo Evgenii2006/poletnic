@@ -3,7 +3,9 @@
 #include "driver/gpio.h"
 #include "driver/uart.h"
 #include "driver/i2c.h"
-#include "driver/pwm.h"
+#include "driver/ledc.h"
+#include "hal/ledc_types.h"
+#include <math.h>
 
 // Пины
 #define MOTOR_PIN GPIO_NUM_13    // PWM для ESC
@@ -24,10 +26,52 @@ uint8_t video_buffer[1024]; // Буфер для кадра
 
 // Инициализация PWM
 void init_pwm() {
-    uint32_t freq = 50; // 50 Гц для ESC и сервоприводов
-    pwm_init(MOTOR_PIN, freq, 1000); // 1000 мкс - центр
-    pwm_init(ELEVON1_PIN, freq, 1000);
-    pwm_init(ELEVON2_PIN, freq, 1000);
+    // Настройка таймера
+    ledc_timer_config_t ledc_timer = {
+        .duty_resolution = LEDC_TIMER_13_BIT, // разрешение 13 бит
+        .freq_hz = 50,                        // частота 50 Гц
+        .speed_mode = LEDC_LOW_SPEED_MODE,   // высокоскоростной режим
+        .timer_num = LEDC_TIMER_0,            // таймер 0
+        .clk_cfg = LEDC_AUTO_CLK
+    };
+    ledc_timer_config(&ledc_timer);
+
+    // Настройка каналов
+    ledc_channel_config_t ledc_channel = {
+        .channel    = LEDC_CHANNEL_0,
+        .duty       = 4096, // 50% duty cycle (1000 мкс)
+        .gpio_num   = MOTOR_PIN,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .hpoint     = 0,
+        .timer_sel  = LEDC_TIMER_0
+    };
+    ledc_channel_config(&ledc_channel);
+
+    ledc_channel.channel = LEDC_CHANNEL_1;
+    ledc_channel.gpio_num = ELEVON1_PIN;
+    ledc_channel_config(&ledc_channel);
+
+    ledc_channel.channel = LEDC_CHANNEL_2;
+    ledc_channel.gpio_num = ELEVON2_PIN;
+    ledc_channel_config(&ledc_channel);
+}
+
+void set_pwm_duty(int channel, uint32_t duty) {
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, duty);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
+}
+
+void i2c_master_init(i2c_port_t i2c_num, gpio_num_t sda, gpio_num_t scl, uint32_t clk_speed) {
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = sda,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = scl,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = clk_speed
+    };
+    i2c_param_config(i2c_num, &conf);
+    i2c_driver_install(i2c_num, conf.mode, 0, 0, 0);
 }
 
 // Чтение данных с IMU (упрощено)
@@ -50,15 +94,18 @@ float pid_control(float setpoint, float measured) {
     integral += error;
     float derivative = error - error_prev;
     float output;
-    asm volatile (
-        "fmul %0, %1, %2\n"  // output = kp * error
-        "fmul %3, %4, %5\n"  // temp = ki * integral
-        "fadd %0, %0, %3\n"  // output += temp
-        "fmul %3, %6, %7\n"  // temp = kd * derivative
-        "fadd %0, %0, %3\n"  // output += temp
-        : "=f" (output), "=f" (error), "=f" (integral), "=f" (derivative)
-        : "f" (kp), "f" (ki), "f" (kd), "r" (error_prev)
-    );
+
+    asm volatile(
+        "muls.s %0, %1, %2\n"  // output = kp * error
+        "muls.s %3, %4, %5\n"  // temp = ki * integral
+        "add.s %0, %0, %3\n"  // output += temp
+        "muls.s %3, %6, %7\n"  // temp = kd * derivative
+        "add.s %0, %0, %3\n"  // output += temp
+        );
+        : "=f" (output)
+        : "f" (kp), "f" (error), "f" (integral), "f" (ki), "f" (kd), "f" (derivative)
+        : "memory"
+    
     error_prev = error;
     return output;
 }
@@ -73,10 +120,9 @@ void flight_task(void *pvParameters) {
         float pitch_output = pid_control(pitch_setpoint, pitch);
 
         // Микширование для элевонов
-        pwm_set_duty(MOTOR_PIN, throttle);
-        pwm_set_duty(ELEVON1_PIN, 1500 + roll_output + pitch_output);
-        pwm_set_duty(ELEVON2_PIN, 1500 - roll_output + pitch_output);
-
+        set_pwm_duty(LEDC_CHANNEL_0, throttle);
+        set_pwm_duty(LEDC_CHANNEL_1, 1500 + roll_output + pitch_output);
+        set_pwm_duty(LEDC_CHANNEL_2, 1500 - roll_output + pitch_output);
         vTaskDelay(10 / portTICK_PERIOD_MS); // 100 Гц
     }
 }
@@ -113,7 +159,7 @@ void video_task(void *pvParameters) {
 
 void app_main() {
     init_pwm();
-    i2c_master_init(I2C_PORT, I2C_SDA, I2C_SCL, 400000);
+    i2c_master_init(I2C_PORT, 21, 22, 400000);
 
     xTaskCreatePinnedToCore(flight_task, "flight_task", 4096, NULL, 10, NULL, 0);
     xTaskCreatePinnedToCore(video_task, "video_task", 4096, NULL, 5, NULL, 1);
