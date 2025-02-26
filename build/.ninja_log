@@ -1116,3 +1116,11 @@
 226	673	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.elf	6f2480f39fa8b499
 226	673	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.bin	6f2480f39fa8b499
 226	673	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.map	6f2480f39fa8b499
+242	751	7622538120164325	bootloader-prefix/src/bootloader-stamp/bootloader-build	6f2480f39fa8b499
+242	751	7622538120164325	bootloader/bootloader.elf	6f2480f39fa8b499
+242	751	7622538120164325	bootloader/bootloader.bin	6f2480f39fa8b499
+242	751	7622538120164325	bootloader/bootloader.map	6f2480f39fa8b499
+242	751	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	6f2480f39fa8b499
+242	751	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.elf	6f2480f39fa8b499
+242	751	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.bin	6f2480f39fa8b499
+242	751	7622538120164325	C:/Users/korab/workspace/Poletnic/build/bootloader/bootloader.map	6f2480f39fa8b499

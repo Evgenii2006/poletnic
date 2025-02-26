@@ -95,21 +95,20 @@ float pid_control(float setpoint, float measured) {
     float derivative = error - error_prev;
     float output;
 
-    asm volatile(
-        "muls.s %0, %1, %2\n"  // output = kp * error
-        "muls.s %3, %4, %5\n"  // temp = ki * integral
-        "add.s %0, %0, %3\n"  // output += temp
-        "muls.s %3, %6, %7\n"  // temp = kd * derivative
-        "add.s %0, %0, %3\n"  // output += temp
-        );
-        : "=f" (output)
-        : "f" (kp), "f" (error), "f" (integral), "f" (ki), "f" (kd), "f" (derivative)
-        : "memory"
-    
+    float pid_control(float setpoint, float measured) {
+    static float error_prev = 0, integral = 0;
+    float kp = 1.0, ki = 0.1, kd = 0.05;
+    float error = setpoint - measured;
+    integral += error;
+    float derivative = error - error_prev;
+    float output;
+
+    output = (kp * error) + (ki * integral) + (kd * derivative);
+
     error_prev = error;
     return output;
+	}
 }
-
 // Управление полетом (Ядро 0)
 void flight_task(void *pvParameters) {
     while (1) {
