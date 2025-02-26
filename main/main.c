@@ -32,7 +32,7 @@ void init_pwm() {
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_13_BIT, // разрешение 13 бит
         .freq_hz = 50,                        // частота 50 Гц
-        .speed_mode = LEDC_LOW_SPEED_MODE,   // высокоскоростной режим
+        .speed_mode = LEDC_LOW_SPEED_MODE,   // низкоскоростной режим
         .timer_num = LEDC_TIMER_0,            // таймер 0
         .clk_cfg = LEDC_AUTO_CLK
     };
